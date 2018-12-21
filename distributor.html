@@ -13,7 +13,7 @@
     <script src="./js/bootstrap.bundle.min.js"></script>
     <script src="js/bootstrap-table.min.js"></script>
   </head>
-  <body onload="loadProvider()">
+  <body onload="loadDistributor()">
     <header class="card"><h1 class="text-center">Dairy Database Viewer</h1></header>
     <div class="container-fluid">
       <br />
@@ -27,7 +27,14 @@
           >
         </div>
         <div class="col-md-6"><h4 class="text-center">Distributors Table</h4></div>
-        <div class="col-md-3"></div>
+        <div class="col-md-3">
+          <button
+          type="button"
+          class="btn btn-outline-primary my-btn"
+          onclick="showCreateModal()" >
+          Create
+          </button>
+        </div>
       </div>
       <br />
       <!-- <div class="card">
@@ -37,7 +44,7 @@
       <br /> -->
       <div style="padding: 1rem" class="card">
         <table
-          id="tblProvider"
+          id="tblDistributor"
           data-pagination="true"
           
           class="table table-hover table-bordered"
@@ -52,20 +59,191 @@
           </thead>
         </table>
       </div>
+
+      <div id="createModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Create New Distributor</h4>
+              <button type="button" class="close" data-dismiss="modal">
+                &times;
+              </button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Distributor ID:</label>
+                <input type="text" class="form-control" id="txtDID" />
+                <label>Name:</label>
+                <input type="text" class="form-control" id="txtName" />
+                <label>Date of Birth:</label>
+                <input type="text" class="form-control" id="txtDOB" />
+                <label>Address:</label>
+                <input type="text" class="form-control" id="txtAddress" />
+                <label>Phone Number:</label>
+                <input type="text" class="form-control" id="txtPhoneNumber" />
+                <label>Aadhar Card Number:</label>
+                <input type="text" class="form-control" id="txtAadhar" />
+              </div>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-dismiss="modal">
+                Close
+              </button>
+              <button
+                type="button"
+                class="btn btn-success"
+                onclick="CreateDistributor()"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </body>
   <script>
-    async function loadProvider() {
-      $.getJSON("http://localhost:30000/api/distributor", function(data, status) {
+    // async function loadDistributor() {
+    //   $.getJSON("http://localhost:30000/api/distributor/show", function(data, status) {
+    //     if (status == "success") {
+    //       $("#tblProvider").bootstrapTable({
+    //         data: data.queryResult
+    //       })
+    //       $("#dispQuery").append(data.queryUsed)
+    //     } else {
+    //       alert("unable to load the data")
+    //     }
+    //   })
+    // }
+
+      
+    let dataResults;
+    let newDistributor=false;
+     async function loadDistributor() {
+      $.getJSON("http://localhost:30000/api/distributor/show", function(
+        data,
+        status
+      ) {
         if (status == "success") {
-          $("#tblProvider").bootstrapTable({
-            data: data.queryResult
-          })
-          $("#dispQuery").append(data.queryUsed)
+          if (data == null) {
+            console.log("No records found")
+          } else {
+            dataResults=data.queryResult;
+            let tbody = "<tbody>"
+            $.each(data.queryResult, function(key, value) {
+              tbody += "<tr>"
+              tbody += "<td>" + value.DID + "</td>"
+              tbody += "<td>" + value.NAME + "</td>"
+              tbody += "<td>" + value.DOB + "</td>"
+              tbody += "<td>" + value.ADDRESS + "</td>"
+              tbody += "<td>" + value.CONTACT_NO + "</td>"
+              tbody += "<td>" + value.AADHAR_CARD + "</td>"
+              tbody +=
+                "<td><button class='btn btn-link' onclick='editDistributor(" + value.DID +")'>Edit</button>&nbsp;|&nbsp;"+
+                "<button class='btn btn-link' onclick='delDistributor(" +
+                value.DID +
+                ")'>Delete</button></td>"
+              tbody += "</tr>"
+            })
+            tbody += "</tbody>"
+            $("#tblDistributor").append(tbody)
+            // $("#tblDistributor").bootstrapTable({
+            //   data: data.queryResult
+            // })
+          }
         } else {
           alert("unable to load the data")
         }
       })
     }
+    async function delDistributor(id) {
+      var res = confirm("Do you wish to delete this row")
+      if (res == true) {
+        // $.ajax({
+        //   url:"http://localhost:30000/api/distributor/"+id,
+        //   type:'DELETE',
+        //   success:function(data){
+        //     window.location.reload()
+        //   }
+        // })
+        $.getJSON("http://localhost:30000/api/distributor/remove/"+id, function(
+        data,
+        status
+      ) {
+        window.location.reload()
+      })
+      }
+    }
+
+    async function editDistributor(id){
+      let distributor;
+      for(let i=0;i<dataResults.length;i++){
+        if(dataResults[i].DID===id){
+          distributor=dataResults[i];
+          break;
+        }
+      }
+      $("#txtDID").val(distributor.DID)
+      $("#txtDID").attr("disabled","disabled");
+      $("#txtName").val(distributor.NAME)
+      $("#txtDOB").val(distributor.DOB)
+       $("#txtAddress").val(distributor.ADDRESS)
+       $("#txtPhoneNumber").val(distributor.CONTACT_NO)
+       $("#txtAadhar").val(distributor.AADHAR_CARD)
+      newDistributor=false;
+      $("#createModal").modal("show")
+    }
+
+    function showCreateModal(){
+      $("#txtDID").removeAttr("disabled");
+      $("#txtDID").val("")
+      $("#txtName").val("")
+      $("#txtDOB").val("")
+       $("#txtAddress").val("")
+       $("#txtPhoneNumber").val("")
+       $("#txtAadhar").val("")
+       newDistributor=true;
+       $("#createModal").modal("show")
+    }
+
+    async function CreateDistributor() {
+      const distributor = {
+        DID: $("#txtDID").val(),
+        Name: $("#txtName").val(),
+        DOB: $("#txtDOB").val(),
+        Address: $("#txtAddress").val(),
+        Contact_no: $("#txtPhoneNumber").val(),
+        Aadhar_card: $("#txtAadhar").val()
+      }
+      if(newDistributor){
+        PostCreateRequest(distributor)
+      }
+      else{
+        PostEditRequest(distributor)
+      }
+      $("#createModal").modal("hide")
+    }
+    async function PostCreateRequest(distributor) {
+      $.post("http://localhost:30000/api/distributor/create", distributor, function(
+        data,
+        status
+      ) {
+        
+          window.location.reload()
+        
+      })
+    }
+    async function PostEditRequest(distributor){
+      $.post("http://localhost:30000/api/distributor/edit",distributor,function(data,status){
+        window.location.reload()
+      })
+    }
+
   </script>
 </html>
