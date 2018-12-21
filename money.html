@@ -13,8 +13,10 @@
     <script src="./js/bootstrap.bundle.min.js"></script>
     <script src="js/bootstrap-table.min.js"></script>
   </head>
-  <body onload="loadProvider()">
-    <header class="card"><h1 class="text-center">Dairy Database Viewer</h1></header>
+  <body onload="loadMoney()">
+    <header class="card">
+      <h1 class="text-center">Dairy Database Viewer</h1>
+    </header>
     <div class="container-fluid">
       <br />
       <div class="row">
@@ -32,19 +34,25 @@
       <br />
       <div style="padding: 1rem" class="card">
         <table
-          id="tblProvider"
+          id="tblMoney"
           data-pagination="true"
-          
           class="table table-hover table-bordered"
         >
           <thead>
             <th data-field="SL_NO">Sl.No</th>
-            <th data-field="DATES">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </th>
+            <th data-field="DATES">
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </th>
             <th data-field="PACKETS_PROCESSED">Packs Processed</th>
             <th data-field="COST_PER_PACKET">Cost/pack(in Rs.)</th>
             <th data-field="TOTAL_INCOMING">Total Incoming(in Rs.)</th>
-            <th data-field="TOTAL_PAYMENT_FOR_MILK">Total Payment for Milk(in Rs.)</th>
-            <th data-field="TOTAL_PAYMENT_FOR_PACKETS">Total Payment for Packets(in Rs.)</th>
+            <th data-field="TOTAL_PAYMENT_FOR_MILK">
+              Total Payment for Milk(in Rs.)
+            </th>
+            <th data-field="TOTAL_PAYMENT_FOR_PACKETS">
+              Total Payment for Packets(in Rs.)
+            </th>
             <th data-field="TOTAL_OUTGOING">Total Outgoing(in Rs.)</th>
             <th data-field="PROFIT">Profit(in Rs.)</th>
           </thead>
@@ -53,12 +61,43 @@
     </div>
   </body>
   <script>
-    async function loadProvider() {
-      $.getJSON("http://localhost:30000/api/money", function(data, status) {
+    async function loadMoney() {
+      $.getJSON("http://localhost:30000/api/money/show", function(
+        data,
+        status
+      ) {
         if (status == "success") {
-          $("#tblProvider").bootstrapTable({
-            data: data
-          })
+          if (data == null) {
+            console.log("No records found")
+          } else {
+            dataResults = data.queryResult
+            let tbody = "<tbody>"
+            $.each(data.queryResult, function(key, value) {
+              tbody += "<tr>"
+              tbody += "<td>" + value.SL_NO + "</td>"
+              tbody += "<td>" + value.DATES + "</td>"
+              tbody += "<td>" + value.PACKETS_PROCESSED + "</td>"
+              tbody += "<td>" + value.COST_PER_PACKET + "</td>"
+              tbody += "<td>" + value.TOTAL_INCOMING + "</td>"
+              tbody += "<td>" + value.TOTAL_PAYMENT_FOR_MILK + "</td>"
+              tbody += "<td>" + value.TOTAL_PAYMENT_FOR_PACKETS + "</td>"
+              tbody += "<td>" + value.TOTAL_OUTGOING + "</td>"
+              tbody += "<td>" + value.PROFIT + "</td>"
+              tbody +=
+                "<td><button class='btn btn-link' onclick='editDistributor(" +
+                value.SL_NO +
+                ")'>Edit</button>&nbsp;|&nbsp;" +
+                "<button class='btn btn-link' onclick='delDistributor(" +
+                value.SL_NO +
+                ")'>Delete</button></td>"
+              tbody += "</tr>"
+            })
+            tbody += "</tbody>"
+            $("#tblMoney").append(tbody)
+            // $("#tblDistributor").bootstrapTable({
+            //   data: data.queryResult
+            // })
+          }
         } else {
           alert("unable to load the data")
         }

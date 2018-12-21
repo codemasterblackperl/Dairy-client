@@ -13,8 +13,10 @@
     <script src="./js/bootstrap.bundle.min.js"></script>
     <script src="js/bootstrap-table.min.js"></script>
   </head>
-  <body onload="loadProvider()">
-    <header class="card"><h1 class="text-center">Dairy Database Viewer</h1></header>
+  <body onload="loadMilk()">
+    <header class="card">
+      <h1 class="text-center">Dairy Database Viewer</h1>
+    </header>
     <div class="container-fluid">
       <br />
       <div class="row">
@@ -32,9 +34,8 @@
       <br />
       <div style="padding: 1rem" class="card">
         <table
-          id="tblProvider"
+          id="tblMilk"
           data-pagination="true"
-          
           class="table table-hover table-bordered"
         >
           <thead>
@@ -48,12 +49,27 @@
     </div>
   </body>
   <script>
-    async function loadProvider() {
-      $.getJSON("http://localhost:30000/api/milk", function(data, status) {
+    async function loadMilk() {
+      $.getJSON("http://localhost:30000/api/milk/show", function(data, status) {
         if (status == "success") {
-          $("#tblProvider").bootstrapTable({
-            data: data
-          })
+          if (data == null) {
+            console.log("No records found")
+          } else {
+            dataResults = data.queryResult
+            let tbody = "<tbody>"
+            $.each(data.queryResult, function(key, value) {
+              tbody += "<tr>"
+              tbody += "<td>" + value.DATES + "</td>"
+              tbody += "<td>" + value.TOTAL_MILK_INPUT + "</td>"
+              tbody += "<td>" + value.COST_PER_LTR_OF_MILK + "</td>"
+              tbody += "<td>" + value.TOTAL_PAYMENT + "</td>"
+            })
+            tbody += "</tbody>"
+            $("#tblMilk").append(tbody)
+            // $("#tblDistributor").bootstrapTable({
+            //   data: data.queryResult
+            // })
+          }
         } else {
           alert("unable to load the data")
         }

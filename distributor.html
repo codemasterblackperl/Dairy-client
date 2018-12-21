@@ -14,7 +14,9 @@
     <script src="js/bootstrap-table.min.js"></script>
   </head>
   <body onload="loadDistributor()">
-    <header class="card"><h1 class="text-center">Dairy Database Viewer</h1></header>
+    <header class="card">
+      <h1 class="text-center">Dairy Database Viewer</h1>
+    </header>
     <div class="container-fluid">
       <br />
       <div class="row">
@@ -26,13 +28,16 @@
             >Back</a
           >
         </div>
-        <div class="col-md-6"><h4 class="text-center">Distributors Table</h4></div>
+        <div class="col-md-6">
+          <h4 class="text-center">Distributors Table</h4>
+        </div>
         <div class="col-md-3">
           <button
-          type="button"
-          class="btn btn-outline-primary my-btn"
-          onclick="showCreateModal()" >
-          Create
+            type="button"
+            class="btn btn-outline-primary my-btn"
+            onclick="showCreateModal()"
+          >
+            Create
           </button>
         </div>
       </div>
@@ -46,7 +51,6 @@
         <table
           id="tblDistributor"
           data-pagination="true"
-          
           class="table table-hover table-bordered"
         >
           <thead>
@@ -105,7 +109,6 @@
           </div>
         </div>
       </div>
-
     </div>
   </body>
   <script>
@@ -122,10 +125,9 @@
     //   })
     // }
 
-      
-    let dataResults;
-    let newDistributor=false;
-     async function loadDistributor() {
+    let dataResults
+    let newDistributor = false
+    async function loadDistributor() {
       $.getJSON("http://localhost:30000/api/distributor/show", function(
         data,
         status
@@ -134,7 +136,7 @@
           if (data == null) {
             console.log("No records found")
           } else {
-            dataResults=data.queryResult;
+            dataResults = data.queryResult
             let tbody = "<tbody>"
             $.each(data.queryResult, function(key, value) {
               tbody += "<tr>"
@@ -145,7 +147,9 @@
               tbody += "<td>" + value.CONTACT_NO + "</td>"
               tbody += "<td>" + value.AADHAR_CARD + "</td>"
               tbody +=
-                "<td><button class='btn btn-link' onclick='editDistributor(" + value.DID +")'>Edit</button>&nbsp;|&nbsp;"+
+                "<td><button class='btn btn-link' onclick='editDistributor(" +
+                value.DID +
+                ")'>Edit</button>&nbsp;|&nbsp;" +
                 "<button class='btn btn-link' onclick='delDistributor(" +
                 value.DID +
                 ")'>Delete</button></td>"
@@ -172,44 +176,44 @@
         //     window.location.reload()
         //   }
         // })
-        $.getJSON("http://localhost:30000/api/distributor/remove/"+id, function(
-        data,
-        status
-      ) {
-        window.location.reload()
-      })
+        $.getJSON(
+          "http://localhost:30000/api/distributor/remove/" + id,
+          function(data, status) {
+            window.location.reload()
+          }
+        )
       }
     }
 
-    async function editDistributor(id){
-      let distributor;
-      for(let i=0;i<dataResults.length;i++){
-        if(dataResults[i].DID===id){
-          distributor=dataResults[i];
-          break;
+    async function editDistributor(id) {
+      let distributor
+      for (let i = 0; i < dataResults.length; i++) {
+        if (dataResults[i].DID === id) {
+          distributor = dataResults[i]
+          break
         }
       }
       $("#txtDID").val(distributor.DID)
-      $("#txtDID").attr("disabled","disabled");
+      $("#txtDID").attr("disabled", "disabled")
       $("#txtName").val(distributor.NAME)
       $("#txtDOB").val(distributor.DOB)
-       $("#txtAddress").val(distributor.ADDRESS)
-       $("#txtPhoneNumber").val(distributor.CONTACT_NO)
-       $("#txtAadhar").val(distributor.AADHAR_CARD)
-      newDistributor=false;
+      $("#txtAddress").val(distributor.ADDRESS)
+      $("#txtPhoneNumber").val(distributor.CONTACT_NO)
+      $("#txtAadhar").val(distributor.AADHAR_CARD)
+      newDistributor = false
       $("#createModal").modal("show")
     }
 
-    function showCreateModal(){
-      $("#txtDID").removeAttr("disabled");
+    function showCreateModal() {
+      $("#txtDID").removeAttr("disabled")
       $("#txtDID").val("")
       $("#txtName").val("")
       $("#txtDOB").val("")
-       $("#txtAddress").val("")
-       $("#txtPhoneNumber").val("")
-       $("#txtAadhar").val("")
-       newDistributor=true;
-       $("#createModal").modal("show")
+      $("#txtAddress").val("")
+      $("#txtPhoneNumber").val("")
+      $("#txtAadhar").val("")
+      newDistributor = true
+      $("#createModal").modal("show")
     }
 
     async function CreateDistributor() {
@@ -221,29 +225,30 @@
         Contact_no: $("#txtPhoneNumber").val(),
         Aadhar_card: $("#txtAadhar").val()
       }
-      if(newDistributor){
+      if (newDistributor) {
         PostCreateRequest(distributor)
-      }
-      else{
+      } else {
         PostEditRequest(distributor)
       }
       $("#createModal").modal("hide")
     }
     async function PostCreateRequest(distributor) {
-      $.post("http://localhost:30000/api/distributor/create", distributor, function(
-        data,
-        status
-      ) {
-        
+      $.post(
+        "http://localhost:30000/api/distributor/create",
+        distributor,
+        function(data, status) {
           window.location.reload()
-        
-      })
+        }
+      )
     }
-    async function PostEditRequest(distributor){
-      $.post("http://localhost:30000/api/distributor/edit",distributor,function(data,status){
-        window.location.reload()
-      })
+    async function PostEditRequest(distributor) {
+      $.post(
+        "http://localhost:30000/api/distributor/edit",
+        distributor,
+        function(data, status) {
+          window.location.reload()
+        }
+      )
     }
-
   </script>
 </html>

@@ -13,8 +13,10 @@
     <script src="./js/bootstrap.bundle.min.js"></script>
     <script src="js/bootstrap-table.min.js"></script>
   </head>
-  <body onload="loadProvider()">
-    <header class="card"><h1 class="text-center">Dairy Database Viewer</h1></header>
+  <body onload="loadPacket()">
+    <header class="card">
+      <h1 class="text-center">Dairy Database Viewer</h1>
+    </header>
     <div class="container-fluid">
       <br />
       <div class="row">
@@ -32,9 +34,8 @@
       <br />
       <div style="padding: 1rem" class="card">
         <table
-          id="tblProvider"
+          id="tblPacket"
           data-pagination="true"
-          
           class="table table-hover table-bordered"
         >
           <thead>
@@ -49,12 +50,39 @@
     </div>
   </body>
   <script>
-    async function loadProvider() {
-      $.getJSON("http://localhost:30000/api/packet", function(data, status) {
+    async function loadPacket() {
+      $.getJSON("http://localhost:30000/api/packet/show", function(
+        data,
+        status
+      ) {
         if (status == "success") {
-          $("#tblProvider").bootstrapTable({
-            data: data
-          })
+          if (data == null) {
+            console.log("No records found")
+          } else {
+            dataResults = data.queryResult
+            let tbody = "<tbody>"
+            $.each(data.queryResult, function(key, value) {
+              tbody += "<tr>"
+              tbody += "<td>" + value.SL_NO + "</td>"
+              tbody += "<td>" + value.DATES + "</td>"
+              tbody += "<td>" + value.PACKETS_MANUFACTURED + "</td>"
+              tbody += "<td>" + value.COST_PER_PACK + "</td>"
+              tbody += "<td>" + value.TOTAL_COST + "</td>"
+              tbody +=
+                "<td><button class='btn btn-link' onclick='editDistributor(" +
+                value.SL_NO +
+                ")'>Edit</button>&nbsp;|&nbsp;" +
+                "<button class='btn btn-link' onclick='delDistributor(" +
+                value.SL_NO +
+                ")'>Delete</button></td>"
+              tbody += "</tr>"
+            })
+            tbody += "</tbody>"
+            $("#tblPacket").append(tbody)
+            // $("#tblDistributor").bootstrapTable({
+            //   data: data.queryResult
+            // })
+          }
         } else {
           alert("unable to load the data")
         }
