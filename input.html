@@ -1,0 +1,231 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Dairy Manager</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./css/bootstrap-grid.min.css" />
+    <link rel="stylesheet" href="./css/bootstrap-table.min.css" />
+    <link rel="stylesheet" href="./css/mystyle.css" />
+    <script src="./js/jquery-3.3.1.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <script src="js/bootstrap-table.min.js"></script>
+  </head>
+  <body onload="loadInput()">
+    <header class="card"><h1 class="text-center">Dairy Database Viewer</h1></header>
+    <div class="container-fluid">
+      <br />
+      <div class="row">
+        <div class="col-md-3">
+          <a
+            href="index.html"
+            role="button"
+            class="btn btn-outline-primary my-btn"
+            >Back</a
+          >
+        </div>
+        <div class="col-md-6"><h4 class="text-center">Input Table</h4></div>
+        <div class="col-md-3">
+          <button
+          type="button"
+          class="btn btn-outline-primary my-btn"
+          onclick="showCreateModal()"
+        >
+          Create
+        </button>
+        </div>
+        </div>
+      </div>
+      <br />
+      <div style="padding: 1rem" class="card">
+        <table
+          id="tblProvider"
+          data-pagination="true"
+          
+          class="table table-hover table-bordered"
+        >
+          <thead>
+            <th data-field="SL_NO">Sl.No</th>
+            <th data-field="DATES">Date</th>
+            <th data-field="QUANTITY">Quantity(in ltrs.)</th>
+            <th data-field="AREA">Area</th>
+            <th data-field="COST_PER_LTR_OF_MILK">Cost/ltr of Milk(in Rs.)</th>
+            <th data-field="TOTAL_PAYMENT">Total Payment(in Rs.)</th>
+          </thead>
+        </table>
+      </div>
+
+      <div id="createModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Create New Input</h4>
+              <button type="button" class="close" data-dismiss="modal">
+                &times;
+              </button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Sl.No:</label>
+                <input type="text" class="form-control" id="txtSl_No" />
+                <label>Date:</label>
+                <input type="text" class="form-control" id="txtDates" />
+                <label>Quantity:</label>
+                <input type="text" class="form-control" id="txtQuantity" />
+                <label>Area:</label>
+                <input type="text" class="form-control" id="txtArea" />
+                <label>Cost/ltr of Milk:</label>
+                <input type="text" class="form-control" id="txtCost_per_milk" />
+                <label>Total Payment:</label>
+                <input type="text" class="form-control" id="txtTotal_payment" />
+              </div>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-dismiss="modal">
+                Close
+              </button>
+              <button
+                type="button"
+                class="btn btn-success"
+                onclick="CreateInput()"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </body>
+  <script>
+    let dataResults;
+    let newInput=false;
+     async function loadInput() {
+      $.getJSON("http://localhost:30000/api/input/show", function(
+        data,
+        status
+      ) {
+        if (status == "success") {
+          if (data == null) {
+            console.log("No records found")
+          } else {
+            dataResults=data.queryResult;
+            let tbody = "<tbody>"
+            $.each(data.queryResult, function(key, value) {
+              tbody += "<tr>"
+              tbody += "<td>" + value.SL_NO + "</td>"
+              tbody += "<td>" + value.DATES + "</td>"
+              tbody += "<td>" + value.QUANTITY + "</td>"
+              tbody += "<td>" + value.AREA + "</td>"
+              tbody += "<td>" + value.COST_PER_LTR_OF_MILK + "</td>"
+              tbody += "<td>" + value.TOTAL_PAYMENT + "</td>"
+              tbody +=
+                "<td><button class='btn btn-link' onclick='editInput(" + value.SL_NO +")'>Edit</button>&nbsp;|&nbsp;"+
+                "<button class='btn btn-link' onclick='delInput(" +
+                value.SL_NO +
+                ")'>Delete</button></td>"
+              tbody += "</tr>"
+            })
+            tbody += "</tbody>"
+            $("#tblInput").append(tbody)
+            // $("#tblInput").bootstrapTable({
+            //   data: data.queryResult
+            // })
+          }
+        } else {
+          alert("unable to load the data")
+        }
+      })
+    }
+    async function delInput(id) {
+      var res = confirm("Do you wish to delete this row")
+      if (res == true) {
+        // $.ajax({
+        //   url:"http://localhost:30000/api/input/"+id,
+        //   type:'DELETE',
+        //   success:function(data){
+        //     window.location.reload()
+        //   }
+        // })
+        $.getJSON("http://localhost:30000/api/input/remove/"+id, function(
+        data,
+        status
+      ) {
+        window.location.reload()
+      })
+      }
+    }
+
+    async function editInput(id){
+      let input;
+      for(let i=0;i<dataResults.length;i++){
+        if(dataResults[i].SL_NO===id){
+          input=dataResults[i];
+          break;
+        }
+      }
+      $("#txtSl_No").val(input.SL_NO)
+      $("#txtSl_No").attr("disabled","disabled");
+      $("#txtDates").val(input.DATES)
+      $("#txtQuantity").val(input.QUANTITY)
+       $("#txtArea").val(input.AREA)
+       $("#txtCost_per_milk").val(input.COST_PER_LTR_OF_MILK)
+       $("#txtTotal_payment").val(input.TOTAL_PAYMENT)
+      newInput=false;
+      $("#createModal").modal("show")
+    }
+
+    function showCreateModal(){
+      $("#txtSl_No").removeAttr("disabled");
+      $("#txtSl_No").val("")
+      $("#txtDates").val("")
+      $("#txtQuantity").val("")
+       $("#txtArea").val("")
+       $("#txtCost_per_milk").val("")
+       $("#txtTotal_payment").val("")
+       newInput=true;
+       $("#createModal").modal("show")
+    }
+
+    async function CreateInput() {
+      const input = {
+        Sl_no: $("#txtSl_No").val(),
+        Dates: $("#txtDates").val(),
+        Quantity: $("#txtQuantity").val(),
+        Area: $("#txtArea").val(),
+        Cost_per_ltr_of_milk: $("#txtCost_per_milk").val(),
+        Total_payment: $("#txtTotal_payment").val()
+      }
+      if(newInput){
+        PostCreateRequest(input)
+      }
+      else{
+        PostEditRequest(input)
+      }
+      $("#createModal").modal("hide")
+    }
+    async function PostCreateRequest(input) {
+      $.post("http://localhost:30000/api/input/create", input, function(
+        data,
+        status
+      ) {
+        
+          window.location.reload()
+        
+      })
+    }
+    async function PostEditRequest(input){
+      $.post("http://localhost:30000/api/input/edit",input,function(data,status){
+        window.location.reload()
+      })
+    }
+  </script>
+</html>

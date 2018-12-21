@@ -1,0 +1,235 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Dairy Manager</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./css/bootstrap-grid.min.css" />
+    <link rel="stylesheet" href="./css/bootstrap-table.min.css" />
+    <link rel="stylesheet" href="./css/mystyle.css" />
+    <script src="./js/jquery-3.3.1.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <script src="js/bootstrap-table.min.js"></script>
+  </head>
+  <body onload="loadProvider()">
+    <header class="card"><h1 class="text-center">Dairy Database Viewer</h1></header>
+    <div class="container-fluid">
+      <br />
+      <div class="row">
+        <div class="col-md-3">
+          <a
+            href="index.html"
+            role="button"
+            class="btn btn-outline-primary my-btn"
+            >Back</a
+          >
+        </div>
+        <div class="col-md-6"><h4 class="text-center">Providers Table</h4></div>
+        <div class="col-md-3">
+          <button
+          type="button"
+          class="btn btn-outline-primary my-btn"
+          onclick="showCreateModal()"
+        >
+          Create
+        </button>
+        </div>
+      </div>
+      <br />
+      <!-- <div class="card">
+          <h4>Query Used</h4>
+          <div id="dispQuery"></div>
+      </div>
+      <br /> -->
+      <div style="padding: 1rem" class="card">
+        <table
+          id="tblProvider"
+          data-pagination="true"
+        
+          class="table table-hover table-bordered"
+        >
+          <thead>
+            <th data-field="PID">Provider ID</th>
+            <th data-field="NAME">Name</th>
+            <th data-field="DOB">Date of Birth</th>
+            <th data-field="ADDRESS">Address</th>
+            <th data-field="CONTACT_NO">Contact Number</th>
+            <th data-field="AADHAR_CARD">Aadhar Card Number</th>
+          </thead>
+        </table>
+      </div>
+
+      <div id="createModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Create New Provider</h4>
+              <button type="button" class="close" data-dismiss="modal">
+                &times;
+              </button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Provider ID:</label>
+                <input type="text" class="form-control" id="txtPID" />
+                <label>Name:</label>
+                <input type="text" class="form-control" id="txtName" />
+                <label>Date of Birth:</label>
+                <input type="date" class="form-control" id="txtDOB" />
+                <label>Address:</label>
+                <input type="text" class="form-control" id="txtAddress" />
+                <label>Phone Number:</label>
+                <input type="text" class="form-control" id="txtPhoneNumber" />
+                <label>Aadhar Card Number:</label>
+                <input type="text" class="form-control" id="txtAadhar" />
+              </div>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-dismiss="modal">
+                Close
+              </button>
+              <button
+                type="button"
+                class="btn btn-success"
+                onclick="CreateProvider()"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </body>
+  <script>
+    let dataResults;
+    let newProvider=false;
+     async function loadProvider() {
+      $.getJSON("http://localhost:30000/api/provider/show", function(
+        data,
+        status
+      ) {
+        if (status == "success") {
+          if (data == null) {
+            console.log("No records found")
+          } else {
+            dataResults=data.queryResult;
+            let tbody = "<tbody>"
+            $.each(data.queryResult, function(key, value) {
+              tbody += "<tr>"
+              tbody += "<td>" + value.PID + "</td>"
+              tbody += "<td>" + value.NAME + "</td>"
+              tbody += "<td>" + value.DOB + "</td>"
+              tbody += "<td>" + value.ADDRESS + "</td>"
+              tbody += "<td>" + value.CONTACT_NO + "</td>"
+              tbody += "<td>" + value.AADHAR_CARD + "</td>"
+              tbody +=
+                "<td><button class='btn btn-link' onclick='editProvider(" + value.PID +")'>Edit</button>&nbsp;|&nbsp;"+
+                "<button class='btn btn-link' onclick='delProvider(" +
+                value.PID +
+                ")'>Delete</button></td>"
+              tbody += "</tr>"
+            })
+            tbody += "</tbody>"
+            $("#tblProvider").append(tbody)
+            // $("#tblProvider").bootstrapTable({
+            //   data: data.queryResult
+            // })
+          }
+        } else {
+          alert("unable to load the data")
+        }
+      })
+    }
+    async function delProvider(id) {
+      var res = confirm("Do you wish to delete this row")
+      if (res == true) {
+        // $.ajax({
+        //   url:"http://localhost:30000/api/provider/"+id,
+        //   type:'DELETE',
+        //   success:function(data){
+        //     window.location.reload()
+        //   }
+        // })
+        $.getJSON("http://localhost:30000/api/provider/remove/"+id, function(
+        data,
+        status
+      ) {
+        window.location.reload()
+      })
+      }
+    }
+
+    async function editProvider(id){
+      let provider;
+      for(let i=0;i<dataResults.length;i++){
+        if(dataResults[i].PID===id){
+          provider=dataResults[i];
+          break;
+        }
+      }
+      $("#txtPID").val(provider.PID)
+      $("#txtPID").attr("disabled","disabled");
+      $("#txtName").val(provider.NAME)
+      $("#txtDOB").val(provider.DOB)
+       $("#txtAddress").val(provider.ADDRESS)
+       $("#txtPhoneNumber").val(provider.CONTACT_NO)
+       $("#txtAadhar").val(provider.AADHAR_CARD)
+      newProvider=false;
+      $("#createModal").modal("show")
+    }
+
+    function showCreateModal(){
+      $("#txtPID").removeAttr("disabled");
+      $("#txtPID").val("")
+      $("#txtName").val("")
+      $("#txtDOB").val("")
+       $("#txtAddress").val("")
+       $("#txtPhoneNumber").val("")
+       $("#txtAadhar").val("")
+       newProvider=true;
+       $("#createModal").modal("show")
+    }
+
+    async function CreateProvider() {
+      const provider = {
+        PID: $("#txtPID").val(),
+        Name: $("#txtName").val(),
+        DOB: $("#txtDOB").val(),
+        Address: $("#txtAddress").val(),
+        Contact_no: $("#txtPhoneNumber").val(),
+        Aadhar_card: $("#txtAadhar").val()
+      }
+      if(newProvider){
+        PostCreateRequest(provider)
+      }
+      else{
+        PostEditRequest(provider)
+      }
+      $("#createModal").modal("hide")
+    }
+    async function PostCreateRequest(provider) {
+      $.post("http://localhost:30000/api/provider/create", provider, function(
+        data,
+        status
+      ) {
+        
+          window.location.reload()
+        
+      })
+    }
+    async function PostEditRequest(provider){
+      $.post("http://localhost:30000/api/provider/edit",provider,function(data,status){
+        window.location.reload()
+      })
+    }
+  </script>
+</html>
