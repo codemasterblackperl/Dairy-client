@@ -13,7 +13,7 @@
     <script src="./js/bootstrap.bundle.min.js"></script>
     <script src="js/bootstrap-table.min.js"></script>
   </head>
-  <body onload="loadProvider()">
+  <body onload="loadPacket()">
     <header class="card"><h1 class="text-center">Dairy Database Viewer</h1></header>
     <div class="container-fluid">
       <br />
@@ -27,12 +27,20 @@
           >
         </div>
         <div class="col-md-6"><h4 class="text-center">Packet Table</h4></div>
-        <div class="col-md-3"></div>
+        <div class="col-md-3">
+          <button
+          type="button"
+          class="btn btn-outline-primary my-btn"
+          onclick="showCreateModal()"
+        >
+        Create
+          </button>
+        </div>
       </div>
       <br />
       <div style="padding: 1rem" class="card">
         <table
-          id="tblProvider"
+          id="tblPacket"
           data-pagination="true"
           
           class="table table-hover table-bordered"
@@ -46,19 +54,187 @@
           </thead>
         </table>
       </div>
+      <div id="createModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Create New Input</h4>
+              <button type="button" class="close" data-dismiss="modal">
+                &times;
+              </button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Sl.No:</label>
+                <input type="text" class="form-control" id="txtSl_no" />
+                <label>Date:</label>
+                <input type="text" class="form-control" id="txtDates" />
+                <label>Packets Manufactured:</label>
+                <input type="text" class="form-control" id="txtPackets_manufactured" />
+                <label>Cost/pack (in Rs.):</label>
+                <input type="text" class="form-control" id="txtCost_per_pack" />
+                <label>Total Cost (in Rs.):</label>
+                <input type="text" class="form-control" id="txtTotal_cost" />
+                
+              </div>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-dismiss="modal">
+                Close
+              </button>
+              <button
+                type="button"
+                class="btn btn-success"
+                onclick="CreatePacket()"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
   <script>
-    async function loadProvider() {
-      $.getJSON("http://localhost:30000/api/packet", function(data, status) {
+    // async function loadProvider() {
+    //   $.getJSON("http://localhost:30000/api/packet", function(data, status) {
+    //     if (status == "success") {
+    //       $("#tblProvider").bootstrapTable({
+    //         data: data
+    //       })
+    //     } else {
+    //       alert("unable to load the data")
+    //     }
+    //   })
+    // }
+
+    let dataResults;
+    let newMoney=false;
+     async function loadPacket() {
+      $.getJSON("http://localhost:30000/api/packet/show", function(
+        data,
+        status
+      ) {
         if (status == "success") {
-          $("#tblProvider").bootstrapTable({
-            data: data
-          })
+          if (data == null) {
+            console.log("No records found")
+          } else {
+            dataResults=data.queryResult;
+            let tbody = "<tbody>"
+            $.each(data.queryResult, function(key, value) {
+              tbody += "<tr>"
+              tbody += "<td>" + value.SL_NO + "</td>"
+              tbody += "<td>" + value.DATES + "</td>"
+              tbody += "<td>" + value.PACKETS_MANUFACTURED + "</td>"
+              tbody += "<td>" + value.COST_PER_PACK + "</td>"
+              tbody += "<td>" + value.TOTAL_COST + "</td>"
+              
+              tbody +=
+                "<td><button class='btn btn-link' onclick='editPacket(" + value.TOTAL_COST +")'>Edit</button>&nbsp;|&nbsp;"+
+                "<button class='btn btn-link' onclick='delPacket(" +
+                value.TOTAL_COST +
+                ")'>Delete</button></td>"
+              tbody += "</tr>"
+            })
+            tbody += "</tbody>"
+            $("#tblPacket").append(tbody)
+            // $("#tblMoney").bootstrapTable({
+            //   data: data.queryResult
+            // })
+          }
         } else {
           alert("unable to load the data")
         }
       })
     }
+    async function delPacket(id) {
+      var res = confirm("Do you wish to delete this row")
+      if (res == true) {
+        // $.ajax({
+        //   url:"http://localhost:30000/api/packet/"+id,
+        //   type:'DELETE',
+        //   success:function(data){
+        //     window.location.reload()
+        //   }
+        // })
+        $.getJSON("http://localhost:30000/api/packet/remove/"+id, function(
+        data,
+        status
+      ) {
+        window.location.reload()
+      })
+      }
+    }
+
+    async function editPacket(id){
+      let packet;
+      for(let i=0;i<dataResults.length;i++){
+        if(dataResults[i].TOTAL_COST===id){
+          packet=dataResults[i];
+          break;
+        }
+      }
+      $("#txtSl_no").val(packet.SL_NO)
+      
+      $("#txtDates").val(packet.DATES)
+      
+      $("#txtPackets_manufactured").val(packet.PACKETS_MANUFACTURED)
+       $("#txtCost_per_pack").val(packet.COST_PER_PACK)
+       $("#txtTotal_cost").val(packet.TOTAL_COST)
+       $("#txtTotal_cost").attr("disabled","disabled");
+      newPacket=false;
+      $("#createModal").modal("show")
+    }
+
+    function showCreateModal(){
+      $("#txtSl_no").removeAttr("disabled");
+      $("#txtSl_no").val("")
+      $("#txtDates").val("")
+      $("#txtPacks_manufactured").val("")
+       $("#txtCost_per_pack").val("")
+       $("#txtTotal_cost").val("")
+       
+       newPacket=true;
+       $("#createModal").modal("show")
+    }
+
+    async function CreatePacket() {
+      const packet = {
+        Sl_no: $("#txtSl_no").val(),
+        Dates: $("#txtDates").val(),
+        Packets_manufactured: $("#txtPackets_manufactured").val(),
+        Cost_per_pack: $("#txtCost_per_pack").val(),
+        Total_cost: $("#txtTotal_cost").val()
+        
+      }
+      if(newPacket){
+        PostCreateRequest(packet)
+      }
+      else{
+        PostEditRequest(packet)
+      }
+      $("#createModal").modal("hide")
+    }
+    async function PostCreateRequest(packet) {
+      $.post("http://localhost:30000/api/packet/create", packet, function(
+        data,
+        status
+      ) {
+        
+          window.location.reload()
+        
+      })
+    }
+    async function PostEditRequest(packet){
+      $.post("http://localhost:30000/api/packet/edit",packet,function(data,status){
+        window.location.reload()
+      })
+    }
+
   </script>
 </html>
