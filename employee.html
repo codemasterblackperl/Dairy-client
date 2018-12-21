@@ -13,7 +13,7 @@
     <script src="./js/bootstrap.bundle.min.js"></script>
     <script src="js/bootstrap-table.min.js"></script>
   </head>
-  <body onload="loadProvider()">
+  <body onload="loadEmployee()">
     <header class="card"><h1 class="text-center">Dairy Database Viewer</h1></header>
     <div class="container-fluid">
       <br />
@@ -27,12 +27,20 @@
           >
         </div>
         <div class="col-md-6"><h4 class="text-center">Employee Table</h4></div>
-        <div class="col-md-3"></div>
+        <div class="col-md-3">
+          <button
+          type="button"
+          class="btn btn-outline-primary my-btn"
+          onclick="showCreateModal()"
+        >
+          Create
+        </button>
+        </div>
       </div>
       <br />
       <div style="padding: 1rem" class="card">
         <table
-          id="tblProvider"
+          id="tblEmployee"
           data-pagination="true"
           
           class="table table-hover table-bordered"
@@ -49,19 +57,201 @@
           </thead>
         </table>
       </div>
+
+      <div id="createModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Create New Employee</h4>
+              <button type="button" class="close" data-dismiss="modal">
+                &times;
+              </button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Employee ID:</label>
+                <input type="text" class="form-control" id="txtEID" />
+                <label>Name:</label>
+                <input type="text" class="form-control" id="txtName" />
+                <label>Date of Birth:</label>
+                <input type="text" class="form-control" id="txtDOB" />
+                <label>Address:</label>
+                <input type="text" class="form-control" id="txtAddress" />
+                <label>Phone Number:</label>
+                <input type="text" class="form-control" id="txtPhoneNumber" />
+                <label>Aadhar Card Number:</label>
+                <input type="text" class="form-control" id="txtAadhar" />
+                <label>Position:</label>
+                <input type="text" class="form-control" id="txtPosition" />
+                <label>Salary:</label>
+                <input type="text" class="form-control" id="txtSalary" />
+              </div>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-dismiss="modal">
+                Close
+              </button>
+              <button
+                type="button"
+                class="btn btn-success"
+                onclick="CreateEmployee()"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </body>
   <script>
-    async function loadProvider() {
-      $.getJSON("http://localhost:30000/api/employee", function(data, status) {
+    // async function loadEmployee() {
+    //   $.getJSON("http://localhost:30000/api/employee", function(data, status) {
+    //     if (status == "success") {
+    //       $("#tblProvider").bootstrapTable({
+    //         data: data
+    //       })
+    //     } else {
+    //       alert("unable to load the data")
+    //     }
+    //   })
+    // }
+
+    let dataResults;
+    let newEmployee=false;
+     async function loadEmployee() {
+      $.getJSON("http://localhost:30000/api/employee/show", function(
+        data,
+        status
+      ) {
         if (status == "success") {
-          $("#tblProvider").bootstrapTable({
-            data: data
-          })
+          if (data == null) {
+            console.log("No records found")
+          } else {
+            dataResults=data.queryResult;
+            let tbody = "<tbody>"
+            $.each(data.queryResult, function(key, value) {
+              tbody += "<tr>"
+              tbody += "<td>" + value.EID + "</td>"
+              tbody += "<td>" + value.NAME + "</td>"
+              tbody += "<td>" + value.DOB + "</td>"
+              tbody += "<td>" + value.ADDRESS + "</td>"
+              tbody += "<td>" + value.CONTACT_NO + "</td>"
+              tbody += "<td>" + value.AADHAR_CARD + "</td>"
+              tbody += "<td>" + value.POSITION + "</td>"
+              tbody += "<td>" + value.SALARY + "</td>"
+              tbody +=
+                "<td><button class='btn btn-link' onclick='editEmployee(" + value.EID +")'>Edit</button>&nbsp;|&nbsp;"+
+                "<button class='btn btn-link' onclick='delEmployee(" +
+                value.EID +
+                ")'>Delete</button></td>"
+              tbody += "</tr>"
+            })
+            tbody += "</tbody>"
+            $("#tblEmployee").append(tbody)
+            // $("#tblEmployee").bootstrapTable({
+            //   data: data.queryResult
+            // })
+          }
         } else {
           alert("unable to load the data")
         }
       })
     }
+    async function delEmployee(id) {
+      var res = confirm("Do you wish to delete this row")
+      if (res == true) {
+        // $.ajax({
+        //   url:"http://localhost:30000/api/employee/"+id,
+        //   type:'DELETE',
+        //   success:function(data){
+        //     window.location.reload()
+        //   }
+        // })
+        $.getJSON("http://localhost:30000/api/employee/remove/"+id, function(
+        data,
+        status
+      ) {
+        window.location.reload()
+      })
+      }
+    }
+
+    async function editEmployee(id){
+      let employee;
+      for(let i=0;i<dataResults.length;i++){
+        if(dataResults[i].PID===id){
+          employee=dataResults[i];
+          break;
+        }
+      }
+      $("#txtEID").val(employee.EID)
+      $("#txtEID").attr("disabled","disabled");
+      $("#txtName").val(employee.NAME)
+      $("#txtDOB").val(employee.DOB)
+       $("#txtAddress").val(employee.ADDRESS)
+       $("#txtPhoneNumber").val(employee.CONTACT_NO)
+       $("#txtAadhar").val(employee.AADHAR_CARD)
+       $("#txtPosition").val(employee.POSITION)
+       $("#txtSalary").val(employee.SALARY)
+      newEmployee=false;
+      $("#createModal").modal("show")
+    }
+
+    function showCreateModal(){
+      $("#txtEID").removeAttr("disabled");
+      $("#txtEID").val("")
+      $("#txtName").val("")
+      $("#txtDOB").val("")
+       $("#txtAddress").val("")
+       $("#txtPhoneNumber").val("")
+       $("#txtAadhar").val("")
+       $("#txtPosition").val("")
+       $("#txtSalary").val("")
+       newEmployee=true;
+       $("#createModal").modal("show")
+    }
+
+    async function CreateEmployee() {
+      const employee = {
+        EID: $("#txtEID").val(),
+        Name: $("#txtName").val(),
+        DOB: $("#txtDOB").val(),
+        Address: $("#txtAddress").val(),
+        Contact_no: $("#txtPhoneNumber").val(),
+        Aadhar_card: $("#txtAadhar").val(),
+        Position: $("#txtPosition").val(),
+        Salary: $("#txtSalary").val()
+      }
+      if(newEmployee){
+        PostCreateRequest(employee)
+      }
+      else{
+        PostEditRequest(employee)
+      }
+      $("#createModal").modal("hide")
+    }
+    async function PostCreateRequest(employee) {
+      $.post("http://localhost:30000/api/employee/create", employee, function(
+        data,
+        status
+      ) {
+        
+          window.location.reload()
+        
+      })
+    }
+    async function PostEditRequest(employee){
+      $.post("http://localhost:30000/api/employee/edit",employee,function(data,status){
+        window.location.reload()
+      })
+    }
+
   </script>
 </html>
