@@ -13,7 +13,7 @@
     <script src="./js/bootstrap.bundle.min.js"></script>
     <script src="js/bootstrap-table.min.js"></script>
   </head>
-  <body onload="loadProvider()">
+  <body onload="loadMilk()">
     <header class="card"><h1 class="text-center">Dairy Database Viewer</h1></header>
     <div class="container-fluid">
       <br />
@@ -27,12 +27,19 @@
           >
         </div>
         <div class="col-md-6"><h4 class="text-center">Milk Table</h4></div>
-        <div class="col-md-3"></div>
+        <div class="col-md-3">
+          <button
+          type="button"
+          class="btn btn-outline-primary my-btn"
+          onclick="showCreateModal()" >
+          Create
+          </button>
+        </div>
       </div>
       <br />
       <div style="padding: 1rem" class="card">
         <table
-          id="tblProvider"
+          id="tblMilk"
           data-pagination="true"
           
           class="table table-hover table-bordered"
@@ -45,19 +52,179 @@
           </thead>
         </table>
       </div>
+      <div id="createModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h4 class="modal-title">Create New Milk</h4>
+              <button type="button" class="close" data-dismiss="modal">
+                &times;
+              </button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Date:</label>
+                <input type="text" class="form-control" id="txtDates" />
+                <label>Total Milk Input(in ltrs.):</label>
+                <input type="text" class="form-control" id="txtTotal_milk_input" />
+                <label>Cost/ltr of Milk(in Rs.):</label>
+                <input type="text" class="form-control" id="txtCost_per_ltr_of_milk" />
+                <label>Total Payment(in Rs.):</label>
+                <input type="text" class="form-control" id="txtTotal_payment" />
+                
+              </div>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-dismiss="modal">
+                Close
+              </button>
+              <button
+                type="button"
+                class="btn btn-success"
+                onclick="CreateMilk()"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
   <script>
-    async function loadProvider() {
-      $.getJSON("http://localhost:30000/api/milk", function(data, status) {
+    // async function loadProvider() {
+    //   $.getJSON("http://localhost:30000/api/milk", function(data, status) {
+    //     if (status == "success") {
+    //       $("#tblProvider").bootstrapTable({
+    //         data: data
+    //       })
+    //     } else {
+    //       alert("unable to load the data")
+    //     }
+    //   })
+    // }
+
+    let dataResults;
+    let newMilk=false;
+     async function loadMilk() {
+      $.getJSON("http://localhost:30000/api/milk/show", function(
+        data,
+        status
+      ) {
         if (status == "success") {
-          $("#tblProvider").bootstrapTable({
-            data: data
-          })
+          if (data == null) {
+            console.log("No records found")
+          } else {
+            dataResults=data.queryResult;
+            let tbody = "<tbody>"
+            $.each(data.queryResult, function(key, value) {
+              tbody += "<tr>"
+              tbody += "<td>" + value.DATES + "</td>"
+              tbody += "<td>" + value.TOTAL_MILK_INPUT + "</td>"
+              tbody += "<td>" + value.COST_PER_LTR_OF_MILK + "</td>"
+              tbody += "<td>" + value.TOTAL_PAYMENT + "</td>"
+              tbody +=
+                "<td><button class='btn btn-link' onclick='editMilk(" + value.DATES +")'>Edit</button>&nbsp;|&nbsp;"+
+                "<button class='btn btn-link' onclick='delMilk(" +
+                value.DATES +
+                ")'>Delete</button></td>"
+              tbody += "</tr>"
+            })
+            tbody += "</tbody>"
+            $("#tblMilk").append(tbody)
+            // $("#tblMilk").bootstrapTable({
+            //   data: data.queryResult
+            // })
+          }
         } else {
           alert("unable to load the data")
         }
       })
     }
+    async function delMilk(id) {
+      var res = confirm("Do you wish to delete this row")
+      if (res == true) {
+        // $.ajax({
+        //   url:"http://localhost:30000/api/milk/"+id,
+        //   type:'DELETE',
+        //   success:function(data){
+        //     window.location.reload()
+        //   }
+        // })
+        $.getJSON("http://localhost:30000/api/milk/remove/"+id, function(
+        data,
+        status
+      ) {
+        window.location.reload()
+      })
+      }
+    }
+
+    async function editMilk(id){
+      let milk;
+      for(let i=0;i<dataResults.length;i++){
+        if(dataResults[i].DATES===id){
+          milk=dataResults[i];
+          break;
+        }
+      }
+      $("#txtDates").val(milk.DATES)
+      $("#txtDates").attr("disabled","disabled");
+      $("#txtTotal_milk_input").val(milk.TOTAL_MILK_INPUT)
+      $("#txtCost_per_ltr_of_milk").val(milk.COST_PER_LTR_OF_MILK)
+       $("#txtTotal_payment").val(milk.TOTAL_PAYMENT)
+       
+      newMilk=false;
+      $("#createModal").modal("show")
+    }
+
+    function showCreateModal(){
+      $("#txtDates").removeAttr("disabled");
+      $("#txtDates").val("")
+      $("#txtTotal_milk_input").val("")
+      $("#txtCost_per_ltr_of_milk").val("")
+       $("#txtTotal_payment").val("")
+       
+       newMilk=true;
+       $("#createModal").modal("show")
+    }
+
+    async function CreateMilk() {
+      const milk = {
+        Dates: $("#txtDates").val(),
+        Total_milk_input: $("#txtTotal_milk_input").val(),
+        Cost_per_ltr_of_milk: $("#txtCost_per_ltr_of_milk").val(),
+        Total_payment: $("#txtTotal_payment").val()
+        
+      }
+      if(newMilk){
+        PostCreateRequest(milk)
+      }
+      else{
+        PostEditRequest(milk)
+      }
+      $("#createModal").modal("hide")
+    }
+    async function PostCreateRequest(milk) {
+      $.post("http://localhost:30000/api/milk/create", milk, function(
+        data,
+        status
+      ) {
+        
+          window.location.reload()
+        
+      })
+    }
+    async function PostEditRequest(milk){
+      $.post("http://localhost:30000/api/milk/edit",milk,function(data,status){
+        window.location.reload()
+      })
+    }
+
   </script>
 </html>
