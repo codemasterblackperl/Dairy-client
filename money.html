@@ -151,9 +151,9 @@
               tbody += "<td>" + value.TOTAL_OUTGOING + "</td>"
               tbody += "<td>" + value.PROFIT + "</td>"
               tbody +=
-                "<td><button class='btn btn-link' onclick='editMoney(" + value.DATES +")'>Edit</button>&nbsp;|&nbsp;"+
+                "<td><button class='btn btn-link' onclick='editMoney(" + value.SL_NO +")'>Edit</button>&nbsp;|&nbsp;"+
                 "<button class='btn btn-link' onclick='delMoney(" +
-                value.DATES +
+                value.SL_NO +
                 ")'>Delete</button></td>"
               tbody += "</tr>"
             })
@@ -178,7 +178,7 @@
         //     window.location.reload()
         //   }
         // })
-        $.getJSON("http://localhost:30000/api/employee/remove/"+id, function(
+        $.getJSON("http://localhost:30000/api/money/remove/"+id, function(
         data,
         status
       ) {
@@ -190,15 +190,15 @@
     async function editMoney(id){
       let money;
       for(let i=0;i<dataResults.length;i++){
-        if(dataResults[i].DATES===id){
+        if(dataResults[i].SL_NO===id){
           money=dataResults[i];
           break;
         }
       }
       $("#txtSl_no").val(money.SL_NO)
-      
+      $("#txtSl_no").attr("disabled","disabled");
       $("#txtDates").val(money.DATES)
-      $("#txtDates").attr("disabled","disabled");
+      
       $("#txtPacks_processed").val(money.PACKETS_PROCESSED)
        $("#txtCost_per_pack").val(money.COST_PER_PACKET)
        $("#txtTotal_incoming").val(money.TOTAL_INCOMING)
@@ -211,7 +211,7 @@
     }
 
     function showCreateModal(){
-      $("#txtDates").removeAttr("disabled");
+      $("#txtSl_no").removeAttr("disabled");
       $("#txtSl_no").val("")
       $("#txtDates").val("")
       $("#txtPacks_processed").val("")
@@ -225,7 +225,7 @@
        $("#createModal").modal("show")
     }
 
-    async function CreateEmployee() {
+    async function CreateMoney() {
       const money = {
         Sl_no: $("#txtSl_no").val(),
         Dates: $("#txtDates").val(),
@@ -235,7 +235,7 @@
         Total_payment_for_milk: $("#txtTotal_payment_for_milk").val(),
         Total_payment_for_packets: $("#txtTotal_payment_for_packets").val(),
         Total_outgoing: $("#txtTotal_outgoing").val(),
-        Total_outgoing: $("#txtProfit").val()
+        Profit: $("#txtProfit").val()
       }
       if(newMoney){
         PostCreateRequest(money)
