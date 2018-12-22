@@ -135,12 +135,12 @@
               tbody += "<td>" + value.COST_PER_LTR_OF_MILK + "</td>"
               tbody += "<td>" + value.TOTAL_PAYMENT + "</td>"
               tbody +=
-                "<td><button class='btn btn-link' onclick='editMilk(" +
+                "<td><button class='btn btn-link' onclick='editMilk(\"" +
                 value.DATES +
-                ")'>Edit</button>&nbsp;|&nbsp;" +
-                "<button class='btn btn-link' onclick='delMilk(" +
+                "\")'>Edit</button>&nbsp;|&nbsp;" +
+                "<button class='btn btn-link' onclick='delMilk(\"" +
                 value.DATES +
-                ")'>Delete</button></td>"
+                "\")'>Delete</button></td>"
               tbody += "</tr>"
             })
             tbody += "</tbody>"
